@@ -572,6 +572,13 @@ export default class DataSheet extends PureComponent {
     document.addEventListener('cut', this.handleCut);
     document.addEventListener('copy', this.handleCopy);
     document.addEventListener('paste', this.handlePaste);
+
+    // Force focus when controlled
+    if (this.isSelectionControlled()) {
+      setTimeout(() => {
+        this.dgDom && this.dgDom.focus();
+      }, 1);
+    }
   }
 
   onMouseOver(i, j) {

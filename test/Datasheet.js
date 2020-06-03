@@ -1028,30 +1028,45 @@ describe('Component', () => {
       it('moves right with arrow keys', () => {
         wrapper.find('td').at(0).simulate('mouseDown');
         expect(wrapper.state('start')).toEqual({ i: 0, j: 0 });
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
         triggerKeyDownEvent(wrapper, RIGHT_KEY);
         expect(wrapper.state('start')).toEqual({ i: 0, j: 1 });
       });
       it('moves left with arrow keys', () => {
         wrapper.find('td').at(1).simulate('mouseDown');
         expect(wrapper.state('start')).toEqual({ i: 0, j: 1 });
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
         triggerKeyDownEvent(wrapper, LEFT_KEY);
         expect(wrapper.state('start')).toEqual({ i: 0, j: 0 });
       });
       it('moves up with arrow keys', () => {
         wrapper.find('td').at(3).simulate('mouseDown');
         expect(wrapper.state('start')).toEqual({ i: 1, j: 1 });
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
         triggerKeyDownEvent(wrapper, UP_KEY);
         expect(wrapper.state('start')).toEqual({ i: 0, j: 1 });
       });
       it('moves down with arrow keys', () => {
         wrapper.find('td').at(0).simulate('mouseDown');
         expect(wrapper.state('start')).toEqual({ i: 0, j: 0 });
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
         triggerKeyDownEvent(wrapper, DOWN_KEY);
         expect(wrapper.state('start')).toEqual({ i: 1, j: 0 });
       });
       it('moves to next row if there is no right cell', () => {
         wrapper.find('td').at(1).simulate('mouseDown');
         expect(wrapper.state('start')).toEqual({ i: 0, j: 1 });
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
         triggerKeyDownEvent(wrapper, TAB_KEY);
         expect(wrapper.state('start')).toEqual({ i: 1, j: 0 });
       });
@@ -1065,6 +1080,59 @@ describe('Component', () => {
           shiftKey: true,
         });
         expect(wrapper.state('start')).toEqual({ i: 0, j: 0 });
+      });
+    });
+
+    describe('keyboard movement on custom cell with controlled selection', () => {
+      it('moves right with arrow keys on custom rendered cell', () => {
+        const dataWithViewer = data.reduce((acc, row) => {
+          acc.push(
+            row.reduce((acc2, cell) => {
+              const ValueViewer = () => (
+                <div className="custom_cell">
+                  <span>{cell.data}</span>
+                </div>
+              );
+              acc2.push({ ...cell, valueViewer: ValueViewer });
+              return acc2;
+            }, []),
+          );
+          return acc;
+        }, []);
+        customWrapper = mount(
+          <DataSheet
+            data={dataWithViewer}
+            selected={null}
+            onSelect={selected => customWrapper.setProps({ selected })}
+            valueRenderer={cell => cell.data}
+          />,
+        );
+        // check that custom renderer was used
+        expect(
+          customWrapper.find('td').at(0).find('div').hasClass('custom_cell'),
+        ).toEqual(true);
+        // click event on the div, not on the td itself
+        customWrapper
+          .find('td')
+          .at(0)
+          .find('div')
+          .find('span')
+          .simulate('mouseDown');
+        customWrapper
+          .find('td')
+          .at(0)
+          .find('div')
+          .find('span')
+          .simulate('mouseUp');
+        expect(customWrapper.props().selected.start).toEqual({ i: 0, j: 0 });
+        expect(customWrapper.props().selected.end).toEqual({ i: 0, j: 0 });
+        // expect focus on dgDom element
+        expect(
+          document.activeElement.classList.contains('data-grid-container'),
+        ).toEqual(true);
+        triggerKeyDownEvent(customWrapper, RIGHT_KEY);
+        expect(customWrapper.props().selected.start).toEqual({ i: 0, j: 1 });
+        expect(customWrapper.props().selected.end).toEqual({ i: 0, j: 1 });
       });
     });
 
