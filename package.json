@@ -1,6 +1,6 @@
 {
   "name": "@standard/react-datasheet",
-  "version": "1.4.4",
+  "version": "1.4.4-alpha.0",
   "description": "Excel-like data grid for React",
   "repository": {
     "type": "git",
